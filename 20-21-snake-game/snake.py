@@ -21,16 +21,22 @@ class Snake:
         self.snake_head = self.segments[0]
 
     def init_snake(self, initial_segments):
-        snake_segments = []
         for i in range(0, initial_segments):
-            snake_segment = Turtle(shape="square")
-            random_green = random.randint(100, 255)
-            snake_segment.color(50, random_green, 50)
-            snake_segment.penup()
-            snake_segment.setx(-self.SEGMENT_WIDTH * i)
-            snake_segments.append(snake_segment)
+            spawn_position_x = (-self.SEGMENT_WIDTH) * i
+            spawn_position = (spawn_position_x, 0)
+            self.add_segment(spawn_position)
 
-        self.segments = snake_segments
+    def add_segment(self, position):
+        snake_segment = Turtle(shape="square")
+        random_green = random.randint(100, 255)
+        snake_segment.color(50, random_green, 50)
+        snake_segment.penup()
+        snake_segment.goto(position)
+        self.segments.append(snake_segment)
+
+    def extend_snake(self):
+        # self.segments[-1] is the last segment of the list
+        self.add_segment(self.segments[-1].position())
 
     def move(self):
         for segment in range(len(self.segments) - 1, 0, -1):  # (start= 2, stop=0, step=-1):
