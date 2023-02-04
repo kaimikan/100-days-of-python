@@ -11,20 +11,31 @@ class Snake:
     def __init__(self, initial_segments):
         self.SEGMENT_WIDTH = 20
         self.segments = []
+        self.starting_segments = initial_segments
 
         # we throw an error if the segment amount is not ok or just overwrite it to 3
         if not (isinstance(initial_segments, (int, float)) and initial_segments > 0):
-            initial_segments = 3
+            self.starting_segments = 3
             # raise ValueError(f"positive segment amount expected, got {initial_segments}")
 
-        self.init_snake(initial_segments=initial_segments)
+        self.init_snake()
         self.snake_head = self.segments[0]
 
-    def init_snake(self, initial_segments):
-        for i in range(0, initial_segments):
+    def init_snake(self):
+        for i in range(0, self.starting_segments):
             spawn_position_x = (-self.SEGMENT_WIDTH) * i
             spawn_position = (spawn_position_x, 0)
             self.add_segment(spawn_position)
+
+    def reset_snake(self):
+        # remove old segments from screen
+        for segment in self.segments:
+            segment.reset()
+        # empty list
+        self.segments.clear()
+        # remake snake
+        self.init_snake()
+        self.snake_head = self.segments[0]
 
     def add_segment(self, position):
         snake_segment = Turtle(shape="square")

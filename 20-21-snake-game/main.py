@@ -44,8 +44,10 @@ while game_is_running:
             snake.snake_head.xcor() < (-SCREEN_WIDTH) / 2 + snake.SEGMENT_WIDTH or \
             snake.snake_head.ycor() > SCREEN_HEIGHT / 2 - snake.SEGMENT_WIDTH or \
             snake.snake_head.ycor() < (-SCREEN_HEIGHT) / 2 + snake.SEGMENT_WIDTH:
-        game_is_running = False
-        score.game_over()
+        # game_is_running = False
+        # score.game_over()
+        score.reset()
+        snake.reset_snake()
 
     # detect snake head and other snake segments collision
     # # implementation without slicing
@@ -58,7 +60,9 @@ while game_is_running:
     # implementation with slicing
     for segment in snake.segments[1:]:
         if snake.snake_head.distance(segment) < snake.SEGMENT_WIDTH / 2:
-            game_is_running = False
-            score.game_over()
+            # game_is_running = False
+            # score.game_over()
+            score.reset()
+            snake.reset_snake()
 
 screen.exitonclick()
