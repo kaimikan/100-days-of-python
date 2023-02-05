@@ -95,9 +95,14 @@ while states_guessed < total_states:
 # collect and save the states which we didn't manage to guess
 missing_states = []
 state_names_list = list(states_dict.keys())
-for state_index in range(0, total_states):
-    if state_names_list[state_index] not in correct_guesses:
-        missing_states.append(state_names_list[state_index])
+# without list comprehension
+# for state_index in range(0, total_states):
+#     if state_names_list[state_index] not in correct_guesses:
+#         missing_states.append(state_names_list[state_index])
+
+# with list comprehension DAMN
+[missing_states.append(state_names_list[state_index]) for state_index in range(0, total_states) if
+ state_names_list[state_index] not in correct_guesses]
 
 pandas.read_csv("50_states.csv")
 # covert it into dict before making it into a dataframe for easier readability
