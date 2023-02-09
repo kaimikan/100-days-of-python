@@ -3,8 +3,37 @@ from tkinter import messagebox
 # we import messagebox even despite * since its a separate file
 import random
 import pyperclip
+import json
 
 RED = "#d4483b"
+
+
+def search_account():
+    website = website_entry.get()
+
+    try:
+        with open("website_accounts.json", mode="r") as file:
+            accounts = json.load(file)
+    except FileNotFoundError:
+        messagebox.showerror(title=website,
+                             message=f"No accounts in the database yet.")
+    else:
+        if website in accounts:
+            messagebox.showinfo(title=website,
+                                message=f"Account for {website}\n"
+                                        f"Email: {accounts[website]['email']}\n"
+                                        f"Password: {accounts[website]['password']}\n")
+        else:
+            messagebox.showerror(title=website,
+                                 message=f"Account not found.")
+
+
+def print_accounts():
+    with open("website_accounts.json", mode="r") as file:
+        # READING FROM JSON ^mode="r"
+        accounts = json.load(file)
+        # the type of accounts is dictionary
+        print(accounts)
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -48,21 +77,47 @@ def save_data():
     website = website_entry.get()
     email = email_entry.get()
     password = password_entry.get()
+    new_account = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
     if len(password) == 0 or len(website) == 0 or len(email) == 0:
         messagebox.showerror(title="Invalid Data", message="Some of the fields are missing")
     else:
-        is_data_ok = messagebox.askokcancel(title=website, message=f"Details entered: "
-                                                                   f"\nEmail: {email}"
-                                                                   f""f"\nPassword: {password}\n")
+        # is_data_ok = messagebox.askokcancel(title=website, message=f"Details entered: "
+        #                                                            f"\nEmail: {email}"
+        #                                                            f""f"\nPassword: {password}\n")
+        # if is_data_ok:
 
-        if is_data_ok:
-            with open("website_accounts.txt", mode="a") as file:
-                file.write(f"{website} | {email} | {password} \n")
-                website_entry.delete(0, END)
-                email_entry.delete(0, END)
-                email_entry.insert(index=0, string="example@gmail.com")
-                password_entry.delete(0, END)
+        # working with JSON
+        try:
+            with open("website_accounts.json", mode="r") as file:
+                # file.write(f"{website} | {email} | {password} \n")
+
+                # UPDATING JSON ^mode="r"
+                # reading old data
+                accounts = json.load(file)
+        except FileNotFoundError:
+            # file has not yet been created => this is the first entry
+            with open("website_accounts.json", mode="w") as file:
+                # # WRITING TO JSON ^mode="w"
+                # json.dump(new_account, file, indent=4)
+                json.dump(new_account, file, indent=4)
+        else:
+            # updating old data with new data
+            accounts.update(new_account)
+            # file has been created, so we update it with the existing entry
+            with open("website_accounts.json", mode="w") as file:
+                json.dump(accounts, file, indent=4)
+        finally:
+            website_entry.delete(0, END)
+            email_entry.delete(0, END)
+            email_entry.insert(index=0, string="example@gmail.com")
+            password_entry.delete(0, END)
+            print_accounts()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -81,14 +136,18 @@ canvas.grid(column=1, row=0)
 # sticky="W"est - sticks to left side of area
 # sticky="EW" - spans to fill the entire area
 
-# Website label and entry
+# Website label and entry + search button
 website_label = Label(text="Website:", font=("Ariel", 15, "bold"), fg=RED)
 website_label.grid(column=0, row=1, sticky="W")
 
 website_entry = Entry()
 # autofocuses to this field on start
 website_entry.focus()
-website_entry.grid(column=1, row=1, columnspan=2, sticky="EW")
+website_entry.grid(column=1, row=1, sticky="EW")
+
+search_button = Button(text="Search", width=15, font=("Ariel", 10, "bold"), fg=RED, bg="#eeeeee", borderwidth=0,
+                       command=search_account)
+search_button.grid(column=2, row=1, sticky="EW")
 
 # Email/Username label and entry
 email_label = Label(text="Email/Username:", font=("Ariel", 15, "bold"), fg=RED)
