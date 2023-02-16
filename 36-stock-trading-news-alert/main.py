@@ -6,6 +6,7 @@ from twilio.rest import Client
 
 STOCK = "TSLA"
 COMPANY_NAME = "Tesla Inc"
+NOTIFICATION_PERCENT_DIFFERENCE = 5
 
 # # STEP 1: Use https://www.alphavantage.co
 # When STOCK price increase/decreases by 5% between yesterday and the day before yesterday then print("Get News").
@@ -61,8 +62,10 @@ TUESDAY = 2
 SATURDAY = 6
 SUNDAY = 7
 current_weekday = dt.datetime.now().weekday()
+day_to_check_news = None
 
-if current_weekday == MONDAY or TUESDAY or SATURDAY or SUNDAY:
+# cool condition
+if any(current_weekday == day for day in (MONDAY, TUESDAY, SATURDAY, SUNDAY)):
     print(
         "this program is a highly unstable experiment! it can only work on "
         "Wednesday, Thursday and Friday (you would otherwise be at a threat of becoming too rich - no problem)")
@@ -70,19 +73,22 @@ if current_weekday == MONDAY or TUESDAY or SATURDAY or SUNDAY:
     print("...so we are doing it for the end of last week.")
     # Friday date
     yesterday = str(get_last_friday()).split(" ")[0]
+    day_to_check_news = get_last_friday()
     print("Yesterday (Friday) was: ", yesterday)
 
     # Thursday date
     day_before_yesterday = str(get_last_thursday()).split(" ")[0]
     print("The day before yesterday (Thursday) was: ", day_before_yesterday)
 else:
-    # Yesterday date
-    yesterday = today - dt.timedelta(days=1)
-    print("Yesterday was: ", yesterday)
+    # both dates are 1 more day in the past than they are supposed to be,
+    # so we can make sure we have the start and end data for the day
+    yesterday = today - dt.timedelta(days=2)
+    day_to_check_news = yesterday
+    print("Yesterday-1 was: ", yesterday)
 
-    # The day before yesterday date
-    day_before_yesterday = today - dt.timedelta(days=2)
-    print("The day before yesterday was: ", day_before_yesterday)
+    # The day before yesterday date - 2
+    day_before_yesterday = today - dt.timedelta(days=3)
+    print("The day before yesterday-1 was: ", day_before_yesterday)
 
 string_start = f"{yesterday} 04:30:00"
 string_end = f"{yesterday} 20:00:00"
@@ -114,7 +120,7 @@ print(f"average stock cost yesterday: {cost_before_yesterday_average}")
 percent_difference = round(find_percent_difference(cost_before_yesterday_average, cost_yesterday_average), 2)
 print(f"{percent_difference}% difference")
 
-if percent_difference >= 5:
+if percent_difference >= NOTIFICATION_PERCENT_DIFFERENCE:
     print("THERE IS MORE THAN A 5% DIFFERENCE, LOOK INTO IT")
     # # STEP 2: Use https://newsapi.org
     # ^ this also has an api for python (but I'll go the response route)
@@ -124,7 +130,7 @@ if percent_difference >= 5:
 
     parameters = {
         "q": COMPANY_NAME,
-        "from": str(today),
+        "from": str(day_to_check_news),
         "sortBy": "popularity",
         "apiKey": news_api_key
     }
@@ -133,7 +139,10 @@ if percent_difference >= 5:
     response.raise_for_status()
     # pick an article to send (i just randomly pick the 3rd here)
     # possible out of range, but we're chilling
-    data = response.json()['articles'][2]
+    try:
+        data = response.json()['articles'][0]
+    except IndexError:
+        data = {"title": "No Title Available", "content": "No content available."}
 
     description = f"{COMPANY_NAME}: {percent_difference}% deviation"
     title = data['title']
